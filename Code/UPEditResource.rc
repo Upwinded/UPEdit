@@ -1,0 +1,8 @@
+Icon_1 Icon "HeC.ico"
+Icon_2 Icon "grp.ico"
+Icon_3 Icon "idx.ico"
+Icon_4 Icon "pic.ico"
+Icon_5 Icon "txt.ico"
+Icon_6 Icon "photo.ico"
+Resource_1 RCData "Arrow.ani"
+PngImage_1 RCData "HecOpen.png"
