@@ -1,5 +1,5 @@
 # UPEdit
-An Editor for Kum Yung's Stories
+An Editor for Kam Yung's Stories
 
 
   Upwinded Editor(UPedit)
