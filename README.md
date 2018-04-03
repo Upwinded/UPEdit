@@ -1,9 +1,9 @@
 # UPEdit
-An Editor for Kam Yung's Stories
+An Editor for All Heroes of Kam Yung's Stories
 
 
   Upwinded Editor(UPedit)
-  An Editor--Special for All Heros in Kam Yung's Stories
+  An Editor--Special for All Heroes in Kam Yung's Stories
   Created by Upwinded.L.
   ©2011 Upwinded.L. Some rights reserved.
 
