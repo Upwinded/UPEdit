@@ -23,7 +23,7 @@ object Form10: TForm10
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 883
+    Width = 885
     Height = 127
     Margins.Left = 4
     Margins.Top = 4
@@ -120,6 +120,7 @@ object Form10: TForm10
       Margins.Bottom = 4
       Caption = #23548#20986'Excel'
       TabOrder = 5
+      Visible = False
       OnClick = Button5Click
     end
     object Button6: TButton
@@ -133,6 +134,7 @@ object Form10: TForm10
       Margins.Bottom = 4
       Caption = #23548#20837'Excel'
       TabOrder = 6
+      Visible = False
       OnClick = Button6Click
     end
     object Button11: TButton
@@ -165,8 +167,8 @@ object Form10: TForm10
   object Panel2: TPanel
     Left = 0
     Top = 127
-    Width = 229
-    Height = 525
+    Width = 231
+    Height = 531
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -177,8 +179,8 @@ object Form10: TForm10
     object ListBox1: TListBox
       Left = 1
       Top = 1
-      Width = 227
-      Height = 523
+      Width = 229
+      Height = 529
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -201,10 +203,10 @@ object Form10: TForm10
     end
   end
   object Panel3: TPanel
-    Left = 229
+    Left = 231
     Top = 127
     Width = 654
-    Height = 525
+    Height = 531
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -214,7 +216,7 @@ object Form10: TForm10
     TabOrder = 2
     object StatusBar1: TStatusBar
       Left = 0
-      Top = 501
+      Top = 507
       Width = 654
       Height = 24
       Margins.Left = 4
@@ -227,7 +229,7 @@ object Form10: TForm10
       Left = 0
       Top = 86
       Width = 654
-      Height = 415
+      Height = 421
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -317,8 +319,8 @@ object Form10: TForm10
   end
   object StatusBar2: TStatusBar
     Left = 0
-    Top = 652
-    Width = 883
+    Top = 658
+    Width = 885
     Height = 24
     Margins.Left = 4
     Margins.Top = 4

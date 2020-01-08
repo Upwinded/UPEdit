@@ -5,7 +5,9 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, head, ExtCtrls, StdCtrls, inifiles, ComCtrls, comobj,
-  XLSFonts4, XLSReadWriteII4, SheetData4, CheckLst, math;
+  {XLSFonts4, XLSReadWriteII4, SheetData4,} CheckLst, math,
+  System.IOUtils,
+  VCL.FlexCel.Core, FlexCel.XlsAdapter;
 
 type
 
@@ -191,31 +193,35 @@ var
   filename: string;
   i1,i2,i3,i4,i5: integer;
   temp, temp2: integer;
-  XLSReadWriteII41: TXLSReadWriteII4;
+  //XLSReadWriteII41: TXLSReadWriteII4;
+  xls: TXlsFile;
 begin
 
-    savedialog1.Filter := 'excel文件|*.xls';
+    savedialog1.Filter := 'excel文件|*.xlsx';
     if savedialog1.Execute then
     begin
       try
-      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
+//      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
       filename := savedialog1.FileName;
-      if not SameText(ExtractFileExt(FileName), '.xls') then
-        FileName := FileName + '.xls';
-
-      XLSReadWriteII41.Clear;
-      XLSReadWriteII41.Filename := Filename;
+      if not SameText(ExtractFileExt(FileName), '.xlsx') then
+        FileName := FileName + '.xlsx';
+//
+//      XLSReadWriteII41.Clear;
+//      XLSReadWriteII41.Filename := Filename;
   //ExcelApp.WorkSheets[2].name := '物品';
   //ExcelApp.Cells[1,4].Value := '第一行第四列';
+  xls := TXlsFile.Create(1, TExcelFileFormat.v2019, true);
 
   for i1 := 0 to RFile.typenumber - 1 do
   begin
-    if I1 >= XLSReadWriteII41.Sheets.Count then
-      XLSReadWriteII41.Sheets.Add(WTSHEET);
-    XLSReadWriteII41.Sheets[i1].Name := displaystr(typename[i1]);
+//    if I1 >= XLSReadWriteII41.Sheets.Count then
+//      XLSReadWriteII41.Sheets.Add(WTSHEET);
+//    XLSReadWriteII41.Sheets[i1].Name := displaystr(typename[i1]);
    // ExcelApp.WorkSheets[i1 + 1].name := typename[i1];
    // ExcelApp.workSheets[i1 + 1].activate;
-
+     xls.AddSheet;
+     xls.ActiveSheet:=i1+1;
+     xls.SheetName := typename[i1];
     temp := 0;
     if i1 = 0 then
     begin
@@ -237,13 +243,15 @@ begin
 
               if i3 > 0 then
               begin
+              xls.SetCellValue(temp+1,1, displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3)));
                 //XLS.Sheets[i1].DrawingObjects.Notes.Add.Text := Rini[i1].Rterm[i2 + i4].name + inttostr(i3);
-                XLSReadWriteII41.Sheets[i1].AsString[0,temp] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
+//                XLSReadWriteII41.Sheets[i1].AsString[0,temp] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
               end
               else
               begin
+              xls.SetCellValue(temp+1,1, displaystr(Rini[i1].Rterm[i2 + i4].name));
                // XLS.Sheets[i1].DrawingObjects.Notes.Add.Text := Rini[i1].Rterm[i2 + i4].name;
-                XLSReadWriteII41.Sheets[i1].AsString[0, temp] := displaystr(Rini[i1].Rterm[i2 + i4].name);
+//                XLSReadWriteII41.Sheets[i1].AsString[0, temp] := displaystr(Rini[i1].Rterm[i2 + i4].name);
               end;
               inc(temp);
             end;
@@ -257,9 +265,11 @@ begin
             for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
               if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-                XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp] := displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
+              xls.SetCellValue(temp+1,i2+2, displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])))
+//                XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp] := displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
               else
-                XLSReadWriteII41.Sheets[i1].Asinteger[i2 + 1, temp] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
+              xls.SetCellValue(temp+1,i2+2, readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//                XLSReadWriteII41.Sheets[i1].Asinteger[i2 + 1, temp] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
               inc(temp);
             end;
         end;
@@ -285,10 +295,12 @@ begin
               //XLS.Sheet[i1].InsertColumns(temp, 1);
               if i3 > 0 then
               begin
-                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
+              xls.SetCellValue(1,temp+1,displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3)))
+//                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
               end
               else
-                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name);
+              xls.SetCellValue(1,temp+1,displaystr(Rini[i1].Rterm[i2 + i4].name));
+//                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name);
               inc(temp);
 
             end;
@@ -306,18 +318,21 @@ begin
             for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
               if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-                XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]:= displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
+              xls.SetCellValue(i2+2,temp+1,displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])))
+//                XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]:= displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
               else
-                XLSReadWriteII41.Sheets[i1].Asinteger[temp, i2 + 1] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
+              xls.SetCellValue(i2+2,temp+1,readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//                XLSReadWriteII41.Sheets[i1].Asinteger[temp, i2 + 1] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
               inc(temp);
             end;
       end;
     end;
 
   end;
-    XLSReadWriteII41.Write;
-    XLSReadWriteII41.Free;
+//    XLSReadWriteII41.Write;
+//    XLSReadWriteII41.Free;
   //ExcelApp:=Unassigned;
+  xls.Save(filename);
         showmessage('导出Excel成功！');
       except
         showmessage('导出Excel错误！');
@@ -331,33 +346,37 @@ procedure TForm5.Button12Click(Sender: TObject);
 var
   i1,i2,i3,i4,i5: integer;
   temp: integer;
-  XLSReadWriteII41 : TXLSReadWriteII4;
+//  XLSReadWriteII41 : TXLSReadWriteII4;
+xls: TXlsFile;
+xf:integer;
+   cell: TCellValue;
 begin
 
-    opendialog1.Filter := 'excel表格文件|*.xls';
+    opendialog1.Filter := 'excel表格文件|*.xlsx';
     if opendialog1.Execute then
     begin
       try
-      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
-      XLSReadWriteII41.Clear;
-      XLSReadWriteII41.Filename := opendialog1.Filename;
-      XLSReadWriteII41.Read;
-
+//      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
+//      XLSReadWriteII41.Clear;
+//      XLSReadWriteII41.Filename := opendialog1.Filename;
+//      XLSReadWriteII41.Read;
+      xls := TXlsFile.Create (opendialog1.Filename);
       RFile.typenumber := typenumber;
       for i1 := 0 to RFile.typenumber - 1 do
       begin
-
+        xls.ActiveSheetByName:=typename[i1];
 
         if i1 = 0 then
         begin
 
           i2 := 1;
-          while True do
-          begin
-            if XLSReadWriteII41.Sheets[i1].AsString[i2,0] = '' then
-              break;
-            inc(i2);
-          end;
+          //while True do
+          //begin
+//            if XLSReadWriteII41.Sheets[i1].AsString[i2,0] = '' then
+//              break;
+            //inc(i2);
+          //end;
+          i2:=xls.ColCount;
           RFile.Rtype[i1].datanum := 0;
           setlength(Rfile.Rtype[i1].Rdata, RFile.Rtype[i1].datanum);
 
@@ -388,8 +407,11 @@ begin
                     //setlength(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str, Rini[i1].Rterm[i3 + i5].datalen);
                     //fileread(F, Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str[0], Rini[i1].Rterm[i3 + i5].datalen);
                     //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].str,Rini[i1].Rterm[i3 + i5].datalen);
-                    WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp]));
+//                    WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp]));
                     //Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str := TtoS(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str);
+                    cell := xls.GetCellValueIndexed(temp+1,i2+2, XF);
+                    //showmessage(cell.ToSimpleString);
+              WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(cell.ToSimpleString));
                     inc(temp);
                   end;
                 end;
@@ -402,16 +424,16 @@ begin
         else
         begin
           i2 := 1;
-          while True do
-          begin
-            if XLSReadWriteII41.Sheets[i1].AsString[0,i2] = '' then
-              break;
-            inc(i2);
-          end;
+          //while True do
+          //begin
+//            if XLSReadWriteII41.Sheets[i1].AsString[0,i2] = '' then
+              //break;
+            //inc(i2);
+          //end;
 
           RFile.Rtype[i1].datanum := 0;
           setlength(Rfile.Rtype[i1].Rdata, RFile.Rtype[i1].datanum);
-
+          i2 := xls.RowCount;
           for I3 := 0 to i2 - 2 do
             AddNewRData(@RFile, i1, nil);
 
@@ -432,7 +454,9 @@ begin
                  begin
                    //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype := Rini[i1].Rterm[i3 + i5].isstr;
                    //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datalen := Rini[i1].Rterm[i3 + i5].datalen;
-                   WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]));
+//                   WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]));
+                   cell := xls.GetCellValueIndexed(i2+2,temp+1, XF);
+              WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(cell.ToSimpleString));
                    inc(temp);
                  end;
                end;
@@ -450,7 +474,7 @@ begin
       arrange;
       displayR;
       //excelApp.Quit;
-      XLSReadWriteII41.Free;
+//      XLSReadWriteII41.Free;
       showmessage('导入Excel成功！');
       except
         showmessage('导入Excel错误！');
@@ -619,8 +643,8 @@ begin
 
   for i1 := 0 to RFile.typenumber - 1 do
   begin
-    ExcelApp.workSheets[i1 + 1].activate;
-    ExcelApp.WorkSheets[i1 + 1].name := displaystr(typename[i1]);
+//    ExcelApp.workSheets[i1 + 1].activate;
+//    ExcelApp.WorkSheets[i1 + 1].name := displaystr(typename[i1]);
 
     temp := 1;
     if i1 = 0 then
@@ -633,10 +657,10 @@ begin
             begin
               if i3 > 0 then
               begin
-                ExcelApp.Cells[temp, 1].value := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
+//                ExcelApp.Cells[temp, 1].value := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
               end
               else
-                ExcelApp.Cells[temp, 1].value := displaystr(Rini[i1].Rterm[i2 + i4].name);
+//                ExcelApp.Cells[temp, 1].value := displaystr(Rini[i1].Rterm[i2 + i4].name);
               inc(temp);
             end;
 
@@ -648,7 +672,7 @@ begin
           for I4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
             for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
-              excelApp.Cells[temp, i2 + 2].value := displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//              excelApp.Cells[temp, i2 + 2].value := displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
               inc(temp);
             end;
       end;
@@ -663,10 +687,10 @@ begin
             begin
               if i3 > 0 then
               begin
-                ExcelApp.Cells[1, temp].value := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
+//                ExcelApp.Cells[1, temp].value := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
               end
               else
-                ExcelApp.Cells[1, temp].value := displaystr(Rini[i1].Rterm[i2 + i4].name);
+//                ExcelApp.Cells[1, temp].value := displaystr(Rini[i1].Rterm[i2 + i4].name);
               inc(temp);
             end;
       for i2 := 0 to RFIle.Rtype[i1].datanum - 1 do
@@ -677,7 +701,7 @@ begin
           for I4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
             for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
-              excelApp.Cells[i2 + 2, temp].value := displaystr(readRDatastr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//              excelApp.Cells[i2 + 2, temp].value := displaystr(readRDatastr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
               inc(temp);
             end;
       end;
@@ -713,7 +737,7 @@ begin
       for i1 := 0 to RFile.typenumber - 1 do
       begin
         //ExcelApp.WorkSheets[i1 + 1].name := typename[i1];
-        ExcelApp.workSheets[i1 + 1].activate;
+//        ExcelApp.workSheets[i1 + 1].activate;
         ExcelApp.Caption := 'UPedit导入Excel操作中(' + displaystr(typename[i1]) + ')';
         if i1 = 0 then
         begin
@@ -721,7 +745,7 @@ begin
           i2 := 2;
           while True do
           begin
-            if String(excelApp.Cells[1, i2].value) = '' then
+//            if String(excelApp.Cells[1, i2].value) = '' then
               break;
             inc(i2);
           end;
@@ -765,7 +789,7 @@ begin
                     begin
                       //fileread(F, PRF.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].number, Rini[i1].Rterm[i3 + i5].datalen)
                       try
-                        WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], strtoint64(string(excelApp.Cells[temp + 1, i2 + 2].value)));
+//                        WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], strtoint64(string(excelApp.Cells[temp + 1, i2 + 2].value)));
                       except
                         WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], 0);
                       end;
@@ -775,7 +799,7 @@ begin
                       //setlength(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str, Rini[i1].Rterm[i3 + i5].datalen);
                       //fileread(F, Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str[0], Rini[i1].Rterm[i3 + i5].datalen);
                       //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].str,Rini[i1].Rterm[i3 + i5].datalen);
-                      WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[temp + 1, i2 + 2].value));
+//                      WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[temp + 1, i2 + 2].value));
                       //Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str := TtoS(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str);
                     end;
                     inc(temp);
@@ -794,8 +818,8 @@ begin
           i2 := 2;
           while True do
           begin
-            if string(excelApp.cells[i2, 1].value) = '' then
-              break;
+//            if string(excelApp.cells[i2, 1].value) = '' then
+//              break;
             inc(i2);
           end;
 
@@ -831,12 +855,12 @@ begin
                    //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype := Rini[i1].Rterm[i3 + i5].isstr;
                    //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datalen := Rini[i1].Rterm[i3 + i5].datalen;
                    if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-                     WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[i2 + 2, temp + 1].value))
+//                     WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[i2 + 2, temp + 1].value))
                    else
                    begin
                      //edit4.Text := inttostr(i1) + ' ' + inttostr(i2) + ' ' + inttostr(i3) + ' ' + inttostr(i4) + ' ' + inttostr(i5) + ' '+ inttostr(temp2)+ ' ' + inttostr(typenumber);
                      try
-                       WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], strtoint64(string(excelApp.Cells[i2 + 2, temp + 1].value)));
+//                       WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], strtoint64(string(excelApp.Cells[i2 + 2, temp + 1].value)));
                      except
                        WriteRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], 0);
                      end;
