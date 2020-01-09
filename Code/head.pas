@@ -843,7 +843,7 @@ begin
   begin
     result := shortint(RdataSingle.data[0]);
   end
-  else if (RDataSingle^.Datalen >= 2) or (RDataSingle^.Datalen < 4) then
+  else if (RDataSingle^.Datalen >= 2) and (RDataSingle^.Datalen < 4) then
   begin
     result := PSmallint(@RdataSingle.data[0])^
   end
