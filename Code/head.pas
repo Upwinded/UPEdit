@@ -572,6 +572,14 @@ end;
 function writeinstr(str: WideString; Data: Pointer; Len: integer): Pointer;
 var
   tempAnsistring: AnsiString;
+function GB2Big(GB: string): string;
+var
+Len: Integer;
+begin
+Len := Length(GB);
+SetLength(Result, Len);
+LCMapString(GetUserDefaultLCID, LCMAP_TRADITIONAL_CHINESE, PChar(GB), Len, PChar(Result), Len);
+end;
 begin
   case datacode of
     0:
@@ -583,7 +591,8 @@ begin
       end;
     1:
       begin
-        tempAnsistring := UnicodeToMulti(Pwidechar(str), 950);
+        //tempAnsistring := UnicodeToMulti(Pwidechar(str), 950);
+        tempAnsistring := UnicodeToMulti(pwidechar(gb2big(Pwidechar(str))), 950);
         Zeromemory(Data, Len);
         if length(tempAnsiString) > 0 then
           copymemory(Data, @tempAnsiString[1], min(length(tempAnsiString), Len));
