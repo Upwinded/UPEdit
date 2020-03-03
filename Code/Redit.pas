@@ -7,7 +7,8 @@ uses
   Dialogs, head, ExtCtrls, StdCtrls, inifiles, ComCtrls, comobj,
   {XLSFonts4, XLSReadWriteII4, SheetData4,} CheckLst, math,
   System.IOUtils,
-  VCL.FlexCel.Core, FlexCel.XlsAdapter;
+  //VCL.FlexCel.Core, FlexCel.XlsAdapter;
+  xlsxio;
 
 type
 
@@ -89,6 +90,7 @@ var
   Rselect: array of Tselect;
   candisplayR : boolean = true;
 
+  strings: array [0..9999] of array [0..9999] of ansistring;
 
 procedure copyRdata(source, dest:PRdata);
 function readR(idx,grp: string; PRF: PRfile): boolean;
@@ -191,165 +193,156 @@ end;
 procedure TForm5.Button11Click(Sender: TObject);
 var
   filename: string;
-  i1,i2,i3,i4,i5: integer;
+  i1, i2, i3, i4, i5: integer;
   temp, temp2: integer;
-  //XLSReadWriteII41: TXLSReadWriteII4;
-  xls: TXlsFile;
+  xls: plxw_workbook;
+  sheet: plxw_worksheet;
 begin
-
-    savedialog1.Filter := 'excel文件|*.xlsx';
-    if savedialog1.Execute then
-    begin
-      try
-//      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
-      filename := savedialog1.FileName;
-      if not SameText(ExtractFileExt(FileName), '.xlsx') then
-        FileName := FileName + '.xlsx';
-//
-//      XLSReadWriteII41.Clear;
-//      XLSReadWriteII41.Filename := Filename;
-  //ExcelApp.WorkSheets[2].name := '物品';
-  //ExcelApp.Cells[1,4].Value := '第一行第四列';
-  xls := TXlsFile.Create(1, TExcelFileFormat.v2019, true);
-
-  for i1 := 0 to RFile.typenumber - 1 do
+  savedialog1.Filter := 'excel文件|*.xlsx';
+  if savedialog1.Execute then
   begin
-//    if I1 >= XLSReadWriteII41.Sheets.Count then
-//      XLSReadWriteII41.Sheets.Add(WTSHEET);
-//    XLSReadWriteII41.Sheets[i1].Name := displaystr(typename[i1]);
-   // ExcelApp.WorkSheets[i1 + 1].name := typename[i1];
-   // ExcelApp.workSheets[i1 + 1].activate;
-     xls.AddSheet;
-     xls.ActiveSheet:=i1+1;
-     xls.SheetName := typename[i1];
-    temp := 0;
-    if i1 = 0 then
-    begin
+    try
+      filename := savedialog1.filename;
+      if not SameText(ExtractFileExt(filename), '.xlsx') then
+        filename := filename + '.xlsx';
+      xls := workbook_new(pansichar(UnicodeToMulti(pwidechar(filename), 65001)));
 
-      temp2 := 0;
-      for i2 := 0 to typedataitem[i1] - 1 do
-         if Rini[i1].Rterm[i2].datanum > 0 then
-            inc(temp2, Rini[i1].Rterm[i2].datanum * Rini[i1].Rterm[i2].incnum);
-     // XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellCol := RFIle.Rtype[i1].datanum + 1;
-     // XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellRow := temp2;
-
-      for i2 := 0 to typedataitem[i1] - 1 do
-        if Rini[i1].Rterm[i2].datanum > 0 then
-          for i3 := 0 to Rini[i1].Rterm[i2].datanum - 1 do
-            for i4 := 0 to Rini[i1].Rterm[i2].incnum - 1 do
-            begin
-            //  XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellCol := 0;
-            //  XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellRow := temp;
-
-              if i3 > 0 then
-              begin
-              xls.SetCellValue(temp+1,1, displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3)));
-                //XLS.Sheets[i1].DrawingObjects.Notes.Add.Text := Rini[i1].Rterm[i2 + i4].name + inttostr(i3);
-//                XLSReadWriteII41.Sheets[i1].AsString[0,temp] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
-              end
-              else
-              begin
-              xls.SetCellValue(temp+1,1, displaystr(Rini[i1].Rterm[i2 + i4].name));
-               // XLS.Sheets[i1].DrawingObjects.Notes.Add.Text := Rini[i1].Rterm[i2 + i4].name;
-//                XLSReadWriteII41.Sheets[i1].AsString[0, temp] := displaystr(Rini[i1].Rterm[i2 + i4].name);
-              end;
-              inc(temp);
-            end;
-
-      for i2 := 0 to RFile.Rtype[i1].datanum - 1 do
+      for i1 := 0 to RFile.typenumber - 1 do
       begin
+        sheet := workbook_add_worksheet(xls, pansichar(UnicodeToMulti(pwidechar(typename[i1]), 65001)));
         temp := 0;
-        for i3 := 0 to RFile.Rtype[i1].Rdata[i2].num - 1 do
+        if i1 = 0 then
         begin
-          for I4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
-            for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
+
+          temp2 := 0;
+          for i2 := 0 to typedataitem[i1] - 1 do
+            if Rini[i1].Rterm[i2].datanum > 0 then
+              inc(temp2, Rini[i1].Rterm[i2].datanum * Rini[i1].Rterm
+                [i2].incnum);
+
+          for i2 := 0 to typedataitem[i1] - 1 do
+            if Rini[i1].Rterm[i2].datanum > 0 then
+              for i3 := 0 to Rini[i1].Rterm[i2].datanum - 1 do
+                for i4 := 0 to Rini[i1].Rterm[i2].incnum - 1 do
+                begin
+                  if i3 > 0 then
+                  begin
+                    worksheet_write_string(sheet, temp, 0,
+                      pansichar(UnicodeToMulti(pwidechar(displaystr(Rini[i1].Rterm[i2 + i4].name +
+                      inttostr(i3))),65001)), nil);
+                  end
+                  else
+                  begin
+                    worksheet_write_string(sheet, temp, 0,
+                      pansichar(UnicodeToMulti(pwidechar(displaystr(Rini[i1].Rterm[i2 + i4].name)),65001)), nil);
+                  end;
+                  inc(temp);
+                end;
+
+          for i2 := 0 to RFile.Rtype[i1].datanum - 1 do
+          begin
+            temp := 0;
+            for i3 := 0 to RFile.Rtype[i1].Rdata[i2].num - 1 do
             begin
-              if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-              xls.SetCellValue(temp+1,i2+2, displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])))
-//                XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp] := displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
-              else
-              xls.SetCellValue(temp+1,i2+2, readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
-//                XLSReadWriteII41.Sheets[i1].Asinteger[i2 + 1, temp] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
-              inc(temp);
+              for i4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
+                for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray
+                  [i4].incnum - 1 do
+                begin
+                  if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4]
+                    .dataarray[i5].datatype = 1 then
+                  begin
+                    worksheet_write_string(sheet, temp, i2+1,
+                      pansichar(UnicodeToMulti(pwidechar(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])),65001)), nil)
+                  end
+                  else
+                  begin
+                    worksheet_write_number(sheet, temp, i2+1,readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]), nil);
+                  end;
+                  inc(temp);
+                end;
             end;
+          end;
+
+        end
+        else
+        begin
+
+          temp2 := 0;
+          for i2 := 0 to typedataitem[i1] - 1 do
+            if Rini[i1].Rterm[i2].datanum > 0 then
+              inc(temp2, Rini[i1].Rterm[i2].datanum * Rini[i1].Rterm
+                [i2].incnum);
+          for i2 := 0 to typedataitem[i1] - 1 do
+          begin
+            if Rini[i1].Rterm[i2].datanum > 0 then
+              for i3 := 0 to Rini[i1].Rterm[i2].datanum - 1 do
+                for i4 := 0 to Rini[i1].Rterm[i2].incnum - 1 do
+                begin
+                  if i3 > 0 then
+                  begin
+                    worksheet_write_string(sheet, 0, temp,
+                      pansichar(UnicodeToMulti(pwidechar(Rini[i1].Rterm[i2 + i4].name + inttostr(i3)),65001)), nil)
+                  end
+                  else
+                  begin
+                    worksheet_write_string(sheet, 0, temp,
+                      pansichar(UnicodeToMulti(pwidechar(Rini[i1].Rterm[i2 + i4].name),65001)), nil);
+                  end;
+                  inc(temp);
+                end;
+
+          end;
+
+          for i2 := 0 to RFile.Rtype[i1].datanum - 1 do
+          begin
+            temp := 0;
+            for i3 := 0 to RFile.Rtype[i1].Rdata[i2].num - 1 do
+              for i4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
+                for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray
+                  [i4].incnum - 1 do
+                begin
+                  if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4]
+                    .dataarray[i5].datatype = 1 then
+                  begin
+                    worksheet_write_string(sheet, i2+1, temp,
+                      pansichar(UnicodeToMulti(pwidechar(displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))), 65001)), nil)
+                  end
+                  else
+                  begin
+                    temp2:=worksheet_write_number(sheet, i2+1, temp,
+                      readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]), nil);
+                  end;
+                  inc(temp);
+                end;
+          end;
         end;
-      end;
-
-    end
-    else
-    begin
-
-      temp2 := 0;
-      for i2 := 0 to typedataitem[i1] - 1 do
-         if Rini[i1].Rterm[i2].datanum > 0 then
-            inc(temp2, Rini[i1].Rterm[i2].datanum * Rini[i1].Rterm[i2].incnum);
-     // XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellCol := RFIle.Rtype[i1].datanum + 1;
-     // XLSReadWriteII41.Sheets[i1].DrawingObjects.Notes.Add.CellRow := temp2;
-
-      for i2 := 0 to typedataitem[i1] - 1 do
-      begin
-        if Rini[i1].Rterm[i2].datanum > 0 then
-          for i3 := 0 to Rini[i1].Rterm[i2].datanum - 1 do
-            for i4 := 0 to Rini[i1].Rterm[i2].incnum - 1 do
-            begin
-              //XLS.Sheet[i1].InsertColumns(temp, 1);
-              if i3 > 0 then
-              begin
-              xls.SetCellValue(1,temp+1,displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3)))
-//                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name + inttostr(i3));
-              end
-              else
-              xls.SetCellValue(1,temp+1,displaystr(Rini[i1].Rterm[i2 + i4].name));
-//                XLSReadWriteII41.Sheets[i1].AsString[temp, 0] := displaystr(Rini[i1].Rterm[i2 + i4].name);
-              inc(temp);
-
-            end;
 
       end;
 
+      workbook_close(xls);
 
-
-      for i2 := 0 to RFIle.Rtype[i1].datanum - 1 do
-      begin
-        //XLS.Sheet[i1].InsertRows(i2 + 1, 1);
-        temp := 0;
-        for i3 := 0 to RFile.Rtype[i1].Rdata[i2].num - 1 do
-          for I4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
-            for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
-            begin
-              if RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-              xls.SetCellValue(i2+2,temp+1,displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])))
-//                XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]:= displaystr(readRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
-              else
-              xls.SetCellValue(i2+2,temp+1,readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
-//                XLSReadWriteII41.Sheets[i1].Asinteger[temp, i2 + 1] := readRDataInt(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
-              inc(temp);
-            end;
-      end;
+      showmessage('导出Excel成功！');
+    except
+      showmessage('导出Excel错误！');
+      exit;
     end;
-
   end;
-//    XLSReadWriteII41.Write;
-//    XLSReadWriteII41.Free;
-  //ExcelApp:=Unassigned;
-  xls.Save(filename);
-        showmessage('导出Excel成功！');
-      except
-        showmessage('导出Excel错误！');
-        exit;
-      end;
-    end;
 
 end;
+
 
 procedure TForm5.Button12Click(Sender: TObject);
 var
   i1,i2,i3,i4,i5: integer;
   temp: integer;
 //  XLSReadWriteII41 : TXLSReadWriteII4;
-xls: TXlsFile;
-xf:integer;
-   cell: TCellValue;
+//xls: TXlsFile;
+  xf:integer;
+   //cell: TCellValue;
+  xls: xlsxioreader;
+  sheet: xlsxioreadersheet;
+  value: pansichar;
+  ic, ir: integer;
 begin
 
     opendialog1.Filter := 'excel表格文件|*.xlsx';
@@ -360,23 +353,35 @@ begin
 //      XLSReadWriteII41.Clear;
 //      XLSReadWriteII41.Filename := opendialog1.Filename;
 //      XLSReadWriteII41.Read;
-      xls := TXlsFile.Create (opendialog1.Filename);
+      //xls := TXlsFile.Create (opendialog1.Filename);
+      xls := xlsxioread_open(pansichar(UnicodeToMulti(pwidechar(opendialog1.Filename), 65001)));
       RFile.typenumber := typenumber;
       for i1 := 0 to RFile.typenumber - 1 do
       begin
-        xls.ActiveSheetByName:=typename[i1];
+        //xls.ActiveSheetByName:=typename[i1];
+        sheet := xlsxioread_sheet_open(xls, pansichar(ansitoutf8(typename[i1])), XLSXIOREAD_SKIP_EMPTY_ROWS);
+
+        ir := 0;
+        ic := 0;
+        while (xlsxioread_sheet_next_row(sheet) <> 0) do
+        begin
+          ic:=0;
+          while true do
+          begin
+            value := xlsxioread_sheet_next_cell(sheet);
+            if value = nil then
+              break;
+            strings[ir][ic]:=value;
+            inc(ic);
+          end;
+          inc(ir);
+        end;
+
 
         if i1 = 0 then
         begin
 
-          i2 := 1;
-          //while True do
-          //begin
-//            if XLSReadWriteII41.Sheets[i1].AsString[i2,0] = '' then
-//              break;
-            //inc(i2);
-          //end;
-          i2:=xls.ColCount;
+          i2 := 2;
           RFile.Rtype[i1].datanum := 0;
           setlength(Rfile.Rtype[i1].Rdata, RFile.Rtype[i1].datanum);
 
@@ -385,33 +390,16 @@ begin
 
           for i2 := 0 to RFile.Rtype[i1].datanum - 1 do
           begin
-            //RFile.Rtype[i1].Rdata[i2].num := temp;
-            //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline, temp);
             temp := 0;
             for I3 := 0 to typedataitem[i1] - 1 do
             begin
               if Rini[i1].Rterm[i3].datanum > 0 then
               begin
-                //RFIle.Rtype[i1].Rdata[i2].Rdataline[temp].len := Rini[i1].Rterm[i3].datanum;
-                //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray, Rini[i1].Rterm[i3].datanum);
-                //setlength(Rfile[i1].Rdata[i2].Rdataline[i3].datatype, Rini[i1].Rterm[i3].incnum);
-                //setlength(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray, Rini[i1].Rterm[i3].incnum);
                 for I4 := 0 to Rini[i1].Rterm[i3].datanum - 1 do
                 begin
-                  //RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].incnum :=  Rini[i1].Rterm[i3].incnum;
-                  //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray, Rini[i1].Rterm[i3].incnum);
                   for i5 := 0 to Rini[i1].Rterm[i3].incnum - 1 do
                   begin
-                    //RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].datatype := Rini[i1].Rterm[i3 + i5].isstr;
-                    //RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].datalen := Rini[i1].Rterm[i3 + i5].datalen;
-                    //setlength(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str, Rini[i1].Rterm[i3 + i5].datalen);
-                    //fileread(F, Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str[0], Rini[i1].Rterm[i3 + i5].datalen);
-                    //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[temp].Rarray[i4].dataarray[i5].str,Rini[i1].Rterm[i3 + i5].datalen);
-//                    WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[i2 + 1, temp]));
-                    //Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str := TtoS(Rfile[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].str);
-                    cell := xls.GetCellValueIndexed(temp+1,i2+2, XF);
-                    //showmessage(cell.ToSimpleString);
-              WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(cell.ToSimpleString));
+                    WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(utf8toansi(strings[temp, i2+1])));
                     inc(temp);
                   end;
                 end;
@@ -424,39 +412,21 @@ begin
         else
         begin
           i2 := 1;
-          //while True do
-          //begin
-//            if XLSReadWriteII41.Sheets[i1].AsString[0,i2] = '' then
-              //break;
-            //inc(i2);
-          //end;
-
           RFile.Rtype[i1].datanum := 0;
           setlength(Rfile.Rtype[i1].Rdata, RFile.Rtype[i1].datanum);
-          i2 := xls.RowCount;
+          i2 := ir;
           for I3 := 0 to i2 - 2 do
             AddNewRData(@RFile, i1, nil);
-
            for i2 := 0 to RFIle.Rtype[i1].datanum - 1 do
            begin
-             //RFIle.Rtype[i1].Rdata[i2].num := temp2;
-             //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline, RFIle.Rtype[i1].Rdata[i2].num);
              temp := 0;
              for i3 := 0 to RFile.Rtype[i1].Rdata[i2].num - 1 do
              begin
-               //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray, Rini[i1].Rterm[i3].datanum);
-               //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len := Rini[i1].Rterm[i3].datanum;
                for I4 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].len - 1 do
                begin
-                 //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum := Rini[i1].Rterm[i3].incnum;
-                 //setlength(RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray, Rini[i1].Rterm[i3].incnum);
                  for i5 := 0 to RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
                  begin
-                   //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype := Rini[i1].Rterm[i3 + i5].isstr;
-                   //RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datalen := Rini[i1].Rterm[i3 + i5].datalen;
-//                   WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[i1].AsString[temp, i2 + 1]));
-                   cell := xls.GetCellValueIndexed(i2+2,temp+1, XF);
-              WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(cell.ToSimpleString));
+                   WriteRDataStr(@RFile.Rtype[i1].Rdata[i2].Rdataline[I3].Rarray[i4].dataarray[i5], displaybackstr(utf8toansi(strings[i2+1, temp])));
                    inc(temp);
                  end;
                end;
@@ -464,7 +434,7 @@ begin
           end;
 
         end;
-
+        xlsxioread_sheet_close(sheet);
       end;
       calnamepos(@RFile);
       combobox1.Clear;
@@ -473,8 +443,7 @@ begin
       combobox1.ItemIndex := 0;
       arrange;
       displayR;
-      //excelApp.Quit;
-//      XLSReadWriteII41.Free;
+      xlsxioread_close(xls);
       showmessage('导入Excel成功！');
       except
         showmessage('导入Excel错误！');
