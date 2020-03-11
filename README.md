@@ -20,3 +20,9 @@ An Editor for All Heroes of Kam Yung's Stories
 
 
   Upwinded.L.(281184040@qq.com), in 2011 April. 
+  
+  -----------------
+  以下是sb500的补充
+  
+  xls支持的列数最多到256，改用tms flexcel可以支持xlsx。
+  后该插件过期，改为自己手动写xlsxio和libxlsxwriter的pas文件。

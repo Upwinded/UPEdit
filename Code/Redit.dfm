@@ -187,6 +187,7 @@ object Form5: TForm5
       Margins.Bottom = 4
       Caption = #23548#20986'Excel'
       TabOrder = 7
+      Visible = False
       OnClick = Button5Click
     end
     object Button6: TButton
@@ -200,6 +201,7 @@ object Form5: TForm5
       Margins.Bottom = 4
       Caption = #23548#20837'Excel'
       TabOrder = 8
+      Visible = False
       OnClick = Button6Click
     end
     object Button11: TButton

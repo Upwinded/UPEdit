@@ -5,7 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, head, inifiles, ExtCtrls, StdCtrls, math, ComCtrls, Spin, IMZObject,
-  comobj, XLSFonts4, XLSReadWriteII4, SheetData4;
+  comobj,
+  System.IOUtils,
+  //VCL.FlexCel.Core, FlexCel.XlsAdapter{, XLSFonts4, XLSReadWriteII4, SheetData4};
+  xlsxio;
 
 type
 
@@ -90,6 +93,8 @@ var
   warselectcontinue: integer;
   warsmallmapsize: integer;
   warexcelopname : String = '战斗数据';
+
+  strings: array [0..9999] of array [0..9999] of ansistring;
 
 procedure readWini;
 function readW(grp: string; PWF: PWFile): boolean;
@@ -410,27 +415,19 @@ var
   filename: string;
   i2,i3,i4,i5: integer;
   temp, temp2: integer;
-  XLSReadWriteII41: TXLSReadWriteII4;
+  xls: plxw_workbook;
+  sheet: plxw_worksheet;
 begin
-
-  savedialog1.Filter := 'excel文件|*.xls';
+  savedialog1.Filter := 'excel文件|*.xlsx';
   if savedialog1.Execute then
   begin
     try
-      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
       filename := savedialog1.FileName;
-      if not SameText(ExtractFileExt(FileName), '.xls') then
-        FileName := FileName + '.xls';
-
-      XLSReadWriteII41.Clear;
-      XLSReadWriteII41.Filename := Filename;
-
-
-      if XLSReadWriteII41.Sheets.Count < 1 then
-        XLSReadWriteII41.Sheets.Add(WTSHEET);
-      XLSReadWriteII41.Sheets[0].Name := displaystr(warExcelopname);
-
-      temp := 0;
+      if not SameText(ExtractFileExt(FileName), '.xlsx') then
+        FileName := FileName + '.xlsx';
+      xls := workbook_new(pansichar(UnicodeToMulti(pwidechar(filename), 65001)));
+      sheet := workbook_add_worksheet(xls, 'Sheet1');
+      temp := 1;
       for i2 := 0 to Wtypedataitem - 1 do
       begin
         for i3 := 0 to Wini.Wterm[i2].datanum - 1 do
@@ -438,10 +435,16 @@ begin
           begin
             if i3 > 0 then
             begin
-              XLSReadWriteII41.Sheets[0].AsString[temp, 0] := displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3));
+              worksheet_write_string(sheet, 0, temp-1,
+                pansichar(UnicodeToMulti(pwidechar(displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3))),65001)), nil)
+              //xls.SetCellValue(1, temp, displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3)));
+//              XLSReadWriteII41.Sheets[0].AsString[temp, 0] := displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3));
             end
             else
-              XLSReadWriteII41.Sheets[0].AsString[temp, 0] := displaystr(Wini.Wterm[i2 + i4].name);
+              worksheet_write_string(sheet, 0, temp-1,
+                pansichar(UnicodeToMulti(pwidechar(displaystr(Wini.Wterm[i2 + i4].name)),65001)), nil);
+            //xls.SetCellValue(1, temp, displaystr(Wini.Wterm[i2 + i4].name));
+//              XLSReadWriteII41.Sheets[0].AsString[temp, 0] := displaystr(Wini.Wterm[i2 + i4].name);
             inc(temp);
           end;
       end;
@@ -450,23 +453,31 @@ begin
 
       for i2 := 0 to WarFile.Wtype.datanum - 1 do
       begin
-        temp := 0;
+        temp := 1;
         for i3 := 0 to WarFile.Wtype.Rdata[i2].num - 1 do
           for I4 := 0 to WarFile.Wtype.Rdata[i2].Rdataline[i3].len - 1 do
             for i5 := 0 to WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
               if WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5].datatype = 1 then
-                XLSReadWriteII41.Sheets[0].AsString[temp, i2 + 1]:= displaystr(readRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
+                worksheet_write_string(sheet, i2+1, temp-1,
+                  pansichar(UnicodeToMulti(pwidechar(displaystr(readRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))),65001)), nil)
+              //xls.SetCellValue(i2+2, temp, displaystr(readRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5])))
+//                XLSReadWriteII41.Sheets[0].AsString[temp, i2 + 1]:= displaystr(readRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]))
               else
-                XLSReadWriteII41.Sheets[0].Asinteger[temp, i2 + 1] := readRDataInt(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
+                worksheet_write_number(sheet, i2+1, temp-1,
+                  readRDataInt(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]), nil);
+              //xls.SetCellValue(i2+2, temp, readRDataInt(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//                XLSReadWriteII41.Sheets[0].Asinteger[temp, i2 + 1] := readRDataInt(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]);
               inc(temp);
             end;
       end;
 
 
-      XLSReadWriteII41.Write;
-      XLSReadWriteII41.Free;
+//      XLSReadWriteII41.Write;
+//      XLSReadWriteII41.Free;
       //ExcelApp:=Unassigned;
+      //xls.Save(FileName);
+      workbook_close(xls);
       showmessage('导出Excel成功！');
     except
       showmessage('导出Excel错误！');
@@ -480,25 +491,56 @@ procedure TForm10.Button12Click(Sender: TObject);
 var
   i2,i3,i4,i5: integer;
   temp: integer;
-  XLSReadWriteII41 : TXLSReadWriteII4;
+//  XLSReadWriteII41 : TXLSReadWriteII4;
+//xls: TXlsFile;
+  XF: integer;
+   //cell: TCellValue;
+  xls: xlsxioreader;
+  sheet: xlsxioreadersheet;
+  value: pansichar;
+  i1: integer;
 begin
 
-  opendialog1.Filter := 'excel表格文件|*.xls';
+  opendialog1.Filter := 'excel表格文件|*.xlsx';
   if opendialog1.Execute then
   begin
     try
-      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
-      XLSReadWriteII41.Clear;
-      XLSReadWriteII41.Filename := opendialog1.Filename;
-      XLSReadWriteII41.Read;
-
-      i2 := 1;
-      while True do
+//      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
+//      XLSReadWriteII41.Clear;
+//      XLSReadWriteII41.Filename := opendialog1.Filename;
+//      XLSReadWriteII41.Read;
+//xls := TXlsFile.Create (opendialog1.Filename);
+//xls.ActiveSheetByName := 'Sheet1';
+      xls := xlsxioread_open(pansichar(UnicodeToMulti(pwidechar(opendialog1.Filename), 65001)));
+      sheet := xlsxioread_sheet_open(xls, 'Sheet1', XLSXIOREAD_SKIP_EMPTY_ROWS);
+      i2 := 0;
+      //while True do
+      //begin
+      //xf:=-1;
+      //if i2>xls.RowCount then
+       //break;
+      //cell := xls.GetCellValueIndexed(i2, 1, XF);
+        //if cell.IsEmpty then
+//        if XLSReadWriteII41.Sheets[0].AsString[0,i2] = '' then
+          //break;
+        //inc(i2);
+      //end;
+      i1:=0;
+      while (xlsxioread_sheet_next_row(sheet) <> 0) do
       begin
-        if XLSReadWriteII41.Sheets[0].AsString[0,i2] = '' then
-          break;
+        i1:=0;
+        while true do
+        begin
+          value := xlsxioread_sheet_next_cell(sheet);
+          if value = nil then
+            break;
+          strings[i2][i1]:=value;
+          inc(i1);
+        end;
         inc(i2);
       end;
+
+      writeln(i2,' ' ,i1);
 
       WarFile.Wtype.datanum := 0;
       setlength(WarFile.Wtype.Rdata, WarFile.Wtype.datanum);
@@ -517,15 +559,23 @@ begin
           begin
             for i5 := 0 to WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
-              WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[0].AsString[temp, i2 + 1]));
+              //WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(XLSReadWriteII41.Sheets[0].AsString[temp, i2 + 1]));
+              //showmessage(xls.GetStringFromCell(temp+1,i2+1));
+              //cell := xls.GetCellValueIndexed(i2+2, temp+1, XF);
+              //WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], cell.ToSimpleString);
+              //value := xlsxioread_sheet_next_cell(sheet);
+              WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], utf8toansi(strings[i2+1][temp]));
+              write(i2+1, ' ',temp, '  ');
               inc(temp);
             end;
           end;
         end;
       end;
 
-
-      XLSReadWriteII41.Free;
+       //xls.Free;
+//      XLSReadWriteII41.Free;
+      xlsxioread_sheet_close(sheet);
+      xlsxioread_close(xls);
 
       CalWNamepos(@warFile);
       combobox1.Clear;
@@ -665,14 +715,14 @@ begin
     ExcelApp.Caption := 'UPedit导出Excel操作';
     excelapp.visible := true;
     ExcelApp.WorkBooks.Add;
-    //ExcelApp.WorkSheets[2].name := '物品';
-    //ExcelApp.Cells[1,4].Value := '第一行第四列';
+//    ExcelApp.WorkSheets[2].name := '物品';
+//    ExcelApp.Cells[1,4].Value := '第一行第四列';
 
     if integer(ExcelApp.workSheets.count) < 1 then
       ExcelApp.workSheets.add;
 
-    ExcelApp.workSheets[1].activate;
-    ExcelApp.WorkSheets[1].name := warExcelopname;
+//    ExcelApp.workSheets[1].activate;
+//    ExcelApp.WorkSheets[1].name := warExcelopname;
 
     temp := 1;
     ExcelApp.Caption := 'UPedit导出Excel操作中(' + warExcelopname +')';
@@ -684,11 +734,11 @@ begin
           begin
             if i3 > 0 then
             begin
-              ExcelApp.Cells[1, temp].value := displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3));
+//              ExcelApp.Cells[1, temp].value := displaystr(Wini.Wterm[i2 + i4].name + inttostr(i3));
             end
             else
-              ExcelApp.Cells[1, temp].value := displaystr(Wini.Wterm[i2 + i4].name);
-            inc(temp);
+//              ExcelApp.Cells[1, temp].value := displaystr(Wini.Wterm[i2 + i4].name);
+//            inc(temp);
           end;
     for i2 := 0 to WarFile.Wtype.datanum - 1 do
     begin
@@ -698,7 +748,7 @@ begin
         for I4 := 0 to WarFile.Wtype.Rdata[i2].Rdataline[i3].len - 1 do
           for i5 := 0 to WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
           begin
-            excelApp.Cells[i2 + 2, temp].value := displaystr(readRDatastr(@warFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
+//            excelApp.Cells[i2 + 2, temp].value := displaystr(readRDatastr(@warFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5]));
             inc(temp);
           end;
     end;
@@ -727,14 +777,14 @@ begin
       excelapp.visible := true;
       ExcelApp.WorkBooks.Open( opendialog1.FileName );
 
-      ExcelApp.workSheets[1].activate;
+//      ExcelApp.workSheets[1].activate;
       ExcelApp.Caption := 'UPedit导入Excel操作中(' + warExcelopname + ')';
 
 
       i2 := 2;
       while True do
       begin
-        if string(excelApp.cells[i2, 1].value) = '' then
+//        if string(excelApp.cells[i2, 1].value) = '' then
           break;
         inc(i2);
       end;
@@ -763,7 +813,7 @@ begin
           begin
             for i5 := 0 to warFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].incnum - 1 do
             begin
-              WriteRDataStr(@warFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[i2 + 2, temp + 1].value));
+//              WriteRDataStr(@warFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], displaybackstr(excelApp.Cells[i2 + 2, temp + 1].value));
               inc(temp);
             end;
           end;
@@ -780,7 +830,7 @@ begin
       combobox1.ItemIndex := 0;
 
       ComboBox1Select(Sender);
-      //excelApp.Quit;
+      excelApp.Quit;
       SetForegroundWindow(application.Handle);
       showmessage('导入Excel完成！');
     end;
