@@ -54,8 +54,6 @@ object Form4: TForm4
       Width = 32
       Height = 41
       Caption = '<<'
-      DoubleBuffered = True
-      ParentDoubleBuffered = False
       TabOrder = 0
       OnClick = BitBtn1Click
     end
@@ -65,8 +63,6 @@ object Form4: TForm4
       Width = 30
       Height = 41
       Caption = '>>'
-      DoubleBuffered = True
-      ParentDoubleBuffered = False
       TabOrder = 1
       OnClick = BitBtn2Click
     end

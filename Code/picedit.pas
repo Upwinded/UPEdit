@@ -314,8 +314,9 @@ end;
 
 procedure TForm4.Button8Click(Sender: TObject);
 var
-  I, PF: integer;
+  I, PF, pfka: integer;
   dir, filename: string;
+  ka:smallint;
 begin
   if picnum > 0 then
   begin
@@ -323,6 +324,7 @@ begin
     begin
       if dir[length(dir)] <> '\' then
         dir := dir + '\';
+      pfka:= filecreate(dir+'index.ka');
       for I := 0 to picnum - 1 do
       begin
         if picdata[I].pictype = 1 then
@@ -332,7 +334,12 @@ begin
         PF := filecreate(filename);
         filewrite(PF, picdata[I].data[0], picdata[I].datasize);
         fileclose(PF);
+        ka:= picdata[I].xs;
+        filewrite(pfka,ka,2);
+        ka:= picdata[I].ys;
+        filewrite(pfka,ka,2);
       end;
+      fileclose(pfka);
     end;
   end;
 end;

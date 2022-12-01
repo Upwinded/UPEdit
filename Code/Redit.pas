@@ -201,7 +201,7 @@ begin
   savedialog1.Filter := 'excel文件|*.xlsx';
   if savedialog1.Execute then
   begin
-    try
+    //try
       filename := savedialog1.filename;
       if not SameText(ExtractFileExt(filename), '.xlsx') then
         filename := filename + '.xlsx';
@@ -322,10 +322,10 @@ begin
       workbook_close(xls);
 
       showmessage('导出Excel成功！');
-    except
-      showmessage('导出Excel错误！');
-      exit;
-    end;
+    //except
+      //showmessage('导出Excel错误！');
+      //exit;
+    //end;
   end;
 
 end;
@@ -348,7 +348,7 @@ begin
     opendialog1.Filter := 'excel表格文件|*.xlsx';
     if opendialog1.Execute then
     begin
-      try
+      //try
 //      XLSReadWriteII41 := TXLSReadWriteII4.Create(self);
 //      XLSReadWriteII41.Clear;
 //      XLSReadWriteII41.Filename := opendialog1.Filename;
@@ -445,10 +445,11 @@ begin
       displayR;
       xlsxioread_close(xls);
       showmessage('导入Excel成功！');
-      except
-        showmessage('导入Excel错误！');
-        exit;
-      end;
+      //except on E: Exception
+      //do
+        //showmessage('导入Excel错误！' + E.ClassName+' error raised, with message : '+E.Message);
+        //exit;
+      //end;
     end;
 end;
 

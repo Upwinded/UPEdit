@@ -540,8 +540,6 @@ begin
         inc(i2);
       end;
 
-      writeln(i2,' ' ,i1);
-
       WarFile.Wtype.datanum := 0;
       setlength(WarFile.Wtype.Rdata, WarFile.Wtype.datanum);
 
@@ -565,7 +563,6 @@ begin
               //WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], cell.ToSimpleString);
               //value := xlsxioread_sheet_next_cell(sheet);
               WriteRDataStr(@WarFile.Wtype.Rdata[i2].Rdataline[i3].Rarray[i4].dataarray[i5], utf8toansi(strings[i2+1][temp]));
-              write(i2+1, ' ',temp, '  ');
               inc(temp);
             end;
           end;
